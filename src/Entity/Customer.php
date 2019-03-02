@@ -5,8 +5,10 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * @ORM\Table(name="customers")
  * @ORM\Entity(repositoryClass="App\Repository\CustomerRepository")
  */
 class Customer
@@ -16,40 +18,47 @@ class Customer
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private $uuid;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Assert\NotBlank()
      */
     private $firstName;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Assert\NotBlank()
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="date", nullable=true)
+     * @Assert\Date()
      */
     private $dateOfBirth;
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Assert\Choice(choices={"active","non-active"}, message="Enter a valid status")
      */
     private $status;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Assert\DateTime()
      */
     private $createdAt;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Assert\DateTime()
      */
     private $updatedAt;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Assert\DateTime()
      */
     private $deletedAt;
 
@@ -63,9 +72,9 @@ class Customer
         $this->products = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getUuid(): ?int
     {
-        return $this->id;
+        return $this->uuid;
     }
 
     public function getFirstName(): ?string

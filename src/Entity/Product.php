@@ -3,8 +3,10 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * @ORM\Table(name="products")
  * @ORM\Entity(repositoryClass="App\Repository\ProductRepository")
  */
 class Product
@@ -14,30 +16,35 @@ class Product
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private $issn;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=50)
+     * @Assert\Choice(choices={"new", "pending", "in review", "approved", "inactive", "deleted"}, message="Enter a valid status")
      */
     private $status;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Assert\DateTime()
      */
     private $createdAt;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Assert\DateTime()
      */
     private $updatedAt;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Assert\DateTime()
      */
     private $deletedAt;
 
@@ -47,9 +54,9 @@ class Product
      */
     private $customer;
 
-    public function getId(): ?int
+    public function getIssn(): ?int
     {
-        return $this->id;
+        return $this->issn;
     }
 
     public function getName(): ?string
