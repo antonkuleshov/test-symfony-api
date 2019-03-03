@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -15,36 +16,42 @@ class Product
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Groups("product")
      */
     private $issn;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank()
+     * @Serializer\Groups("product")
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=50)
      * @Assert\Choice(choices={"new", "pending", "in review", "approved", "inactive", "deleted"}, message="Enter a valid status")
+     * @Serializer\Groups("product")
      */
     private $status;
 
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
+     * @Serializer\Groups("product")
      */
     private $createdAt;
 
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
+     * @Serializer\Groups("product")
      */
     private $updatedAt;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Assert\DateTime()
+     * @Serializer\Groups("product")
      */
     private $deletedAt;
 
@@ -54,7 +61,12 @@ class Product
      */
     private $customer;
 
-    public function getIssn(): ?int
+    public function __construct()
+    {
+        $this->status = "new";
+    }
+
+    public function getId(): ?int
     {
         return $this->issn;
     }

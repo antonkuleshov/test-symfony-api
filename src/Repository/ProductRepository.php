@@ -19,6 +19,19 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+    public function findByStatusOlderOneWeek($value)
+    {
+
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.status = :val')
+            ->having('p.updatedAt < :one_week')
+            ->setParameter('val', $value)
+            ->setParameter('one_week', new \DateTime('-7 days'))
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return Product[] Returns an array of Product objects
     //  */

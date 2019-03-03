@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Repository\CustomerRepository;
+use App\Service\CustomerService;
+use App\Service\ResponseErrorDecoratorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,52 +19,163 @@ class CustomerApiController extends AbstractController
 {
     /**
      * @Route("/", name="get_customers", methods={"GET"})
+     * @param CustomerRepository $customerRepository
      * @return JsonResponse
      */
     public function getCustomers(CustomerRepository $customerRepository): JsonResponse
     {
-        return new JsonResponse($customerRepository->findAll(), Response::HTTP_OK, []);
+        $customers = $this->get("serializer")->serialize(
+            $customerRepository->findAll(),
+            'json'
+        );
+
+        return new JsonResponse($customers, Response::HTTP_OK, []);
     }
 
     /**
      * @Route("/{id}", name="get_customer", methods={"GET"})
+     * @param Customer $customer
+     * @param ResponseErrorDecoratorService $errorDecorator
      * @return JsonResponse
      */
-    public function getCustomer(Customer $customer): JsonResponse
+    public function getCustomer(Customer $customer, ResponseErrorDecoratorService $errorDecorator): JsonResponse
     {
-        return new JsonResponse($customer, Response::HTTP_OK, []);
+        if(!$customer) {
+            $status = JsonResponse::HTTP_NOT_FOUND;
+            $data = $errorDecorator->decorateError(
+                JsonResponse::HTTP_NOT_FOUND, "Not found this uuid"
+            );
+            return new JsonResponse($data, $status);
+        }
+
+        $json = $this->get("serializer")->serialize($customer, 'json');
+
+        return new JsonResponse($json, Response::HTTP_OK, []);
     }
 
     /**
      * @Route("/", name="create_customer", methods={"POST"})
+     * @param Request $request
+     * @param CustomerService $customerService
+     * @param ResponseErrorDecoratorService $errorDecorator
      * @return JsonResponse
      */
-    public function createCustomer(): JsonResponse
+    public function createCustomer(
+        Request $request,
+        CustomerService $customerService,
+        ResponseErrorDecoratorService $errorDecorator): JsonResponse
     {
-        $customer = new Customer();
 
-        return new JsonResponse($customer, Response::HTTP_OK, []);
+        $body = $request->getContent();
+        $data = json_decode($body, true);
+
+        if (is_null($data) || !isset($data['first_name']) || !isset($data['last_name'])) {
+
+            $status = JsonResponse::HTTP_BAD_REQUEST;
+            $data = $errorDecorator->decorateError(
+                JsonResponse::HTTP_BAD_REQUEST, "Invalid JSON format"
+            );
+
+            return new JsonResponse($data, $status);
+        }
+
+        $result = $customerService->createCustomer($data);
+
+        if ($result instanceof Customer) {
+
+            $status = JsonResponse::HTTP_CREATED;
+            $data = [
+                'data' => [
+                    'uuid' => $result->getUuid(),
+                    'first_name' => $result->getFirstName(),
+                    'last_name' => $result->getLastName(),
+                    'created' => $result->getCreatedAt()
+                ]
+            ];
+        } else {
+            $status = JsonResponse::HTTP_BAD_REQUEST;
+            $data = $errorDecorator->decorateError($status, $result);
+        }
+
+        return new JsonResponse($data, $status);
     }
 
     /**
      * @Route("/{id}", name="update_customer", methods={"PUT"})
+     * @param Customer $customer
+     * @param Request $request
+     * @param CustomerService $customerService
+     * @param ResponseErrorDecoratorService $errorDecorator
      * @return JsonResponse
      */
-    public function updateCustomer(Customer $customer): JsonResponse
+    public function updateCustomer(
+        Customer $customer,
+        Request $request,
+        CustomerService $customerService,
+        ResponseErrorDecoratorService $errorDecorator): JsonResponse
     {
-        return new JsonResponse($customer, Response::HTTP_OK, []);
+        $body = $request->getContent();
+        $data = json_decode($body, true);
+
+        if (is_null($data) || !isset($data['first_name']) || !isset($data['last_name'])) {
+
+            $status = JsonResponse::HTTP_BAD_REQUEST;
+            $data = $errorDecorator->decorateError(
+                JsonResponse::HTTP_BAD_REQUEST, "Invalid JSON format"
+            );
+
+            return new JsonResponse($data, $status);
+        }
+
+        $result = $customerService->updateCustomer($customer, $data);
+
+        if ($result instanceof Customer) {
+
+            $status = JsonResponse::HTTP_OK;
+            $data = [
+                'data' => [
+                    'uuid' => $result->getUuid(),
+                    'first_name' => $result->getFirstName(),
+                    'last_name' => $result->getLastName(),
+                    'updated' => $result->getUpdatedAt()
+                ]
+            ];
+        } else {
+            $status = JsonResponse::HTTP_BAD_REQUEST;
+            $data = $errorDecorator->decorateError($status, $result);
+        }
+
+        return new JsonResponse($data, $status);
     }
 
     /**
      * @Route("/{id}", name="delete_customer", methods={"DELETE"})
+     * @param Customer $customer
+     * @param CustomerService $customerService
+     * @param ResponseErrorDecoratorService $errorDecorator
      * @return JsonResponse
      */
-    public function deleteCustomer(Customer $customer): JsonResponse
+    public function deleteCustomer(
+        Customer $customer,
+        CustomerService $customerService,
+        ResponseErrorDecoratorService $errorDecorator): JsonResponse
     {
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->remove($customer);
-        $entityManager->flush();
+        $result = $customerService->deleteCustomer($customer);
 
-        return new JsonResponse("Customer deleted", Response::HTTP_OK, []);
+        if ($result instanceof Customer) {
+            $status = JsonResponse::HTTP_LOCKED;
+            $data = [
+                'data' => [
+                    'uuid' => $result->getUuid(),
+                    'first_name' => $result->getFirstName(),
+                    'last_name' => $result->getLastName(),
+                    'deleted' => $result->getDeletedAt()
+                ]
+            ];
+        } else {
+            $status = JsonResponse::HTTP_BAD_REQUEST;
+            $data = $errorDecorator->decorateError($status, $result);
+        }
+        return new JsonResponse($data, $status);
     }
 }

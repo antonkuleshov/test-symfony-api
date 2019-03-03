@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -17,48 +18,56 @@ class Customer
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Groups("customer")
      */
     private $uuid;
 
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank()
+     * @Serializer\Groups("customer")
      */
     private $firstName;
 
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank()
+     * @Serializer\Groups("customer")
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\Date()
+     * @Serializer\Groups("customer")
      */
     private $dateOfBirth;
 
     /**
      * @ORM\Column(type="string", length=50)
-     * @Assert\Choice(choices={"active", "non-active"}, message="Enter a valid status")
+     * @Assert\Choice(choices={"active","non-active","deleted"}, message="Enter a valid status")
+     * @Serializer\Groups("customer")
      */
     private $status;
 
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
+     * @Serializer\Groups("customer")
      */
     private $createdAt;
 
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
+     * @Serializer\Groups("customer")
      */
     private $updatedAt;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Assert\DateTime()
+     * @Serializer\Groups("customer")
      */
     private $deletedAt;
 
@@ -73,7 +82,7 @@ class Customer
         $this->products = new ArrayCollection();
     }
 
-    public function getUuid(): ?int
+    public function getId(): ?int
     {
         return $this->uuid;
     }
