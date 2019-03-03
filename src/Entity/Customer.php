@@ -40,7 +40,7 @@ class Customer
 
     /**
      * @ORM\Column(type="string", length=50)
-     * @Assert\Choice(choices={"active","non-active"}, message="Enter a valid status")
+     * @Assert\Choice(choices={"active", "non-active"}, message="Enter a valid status")
      */
     private $status;
 
@@ -64,6 +64,7 @@ class Customer
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Product", mappedBy="customer", orphanRemoval=true)
+     * @ORM\JoinColumn(referencedColumnName="issn")
      */
     private $products;
 

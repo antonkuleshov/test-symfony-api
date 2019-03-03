@@ -50,7 +50,7 @@ class Product
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Customer", inversedBy="products")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, referencedColumnName="uuid")
      */
     private $customer;
 
