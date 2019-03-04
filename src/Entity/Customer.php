@@ -12,77 +12,113 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Table(name="customers")
  * @ORM\Entity(repositoryClass="App\Repository\CustomerRepository")
  */
-class Customer
+class Customer implements \Serializable
 {
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Serializer\Groups("customer")
+     * @Serializer\Groups({"customer"})
      */
     private $uuid;
 
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank()
-     * @Serializer\Groups("customer")
+     * @Serializer\Groups({"customer"})
      */
     private $firstName;
 
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank()
-     * @Serializer\Groups("customer")
+     * @Serializer\Groups({"customer"})
      */
     private $lastName;
 
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\Date()
-     * @Serializer\Groups("customer")
+     * @Serializer\Groups({"customer"})
      */
     private $dateOfBirth;
 
     /**
      * @ORM\Column(type="string", length=50)
      * @Assert\Choice(choices={"active","non-active","deleted"}, message="Enter a valid status")
-     * @Serializer\Groups("customer")
+     * @Serializer\Groups({"customer"})
      */
     private $status;
 
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
-     * @Serializer\Groups("customer")
+     * @Serializer\Groups({"customer"})
      */
     private $createdAt;
 
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
-     * @Serializer\Groups("customer")
+     * @Serializer\Groups({"customer"})
      */
     private $updatedAt;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Assert\DateTime()
-     * @Serializer\Groups("customer")
+     * @Serializer\Groups({"customer"})
      */
     private $deletedAt;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Product", mappedBy="customer", orphanRemoval=true)
      * @ORM\JoinColumn(referencedColumnName="issn")
+     * @Serializer\MaxDepth(3)
      */
     private $products;
+
+    /** @see \Serializable::serialize() */
+    public function serialize()
+    {
+        return serialize(array(
+            $this->uuid,
+            $this->firstName,
+            $this->lastName,
+            $this->status,
+            $this->dateOfBirth,
+            $this->createdAt,
+            $this->updatedAt,
+            $this->deletedAt
+        ));
+    }
+
+    /** @see \Serializable::unserialize() */
+    public function unserialize($serialized)
+    {
+        list (
+            $this->uuid,
+            $this->firstName,
+            $this->lastName,
+            $this->status,
+            $this->dateOfBirth,
+            $this->createdAt,
+            $this->updatedAt,
+            $this->deletedAt
+            ) = unserialize($serialized, ['allowed_classes' => false]);
+    }
 
     public function __construct()
     {
         $this->products = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function __toString()
+    {
+        return $this->firstName . " " . $this->lastName;
+    }
+
+    public function getUUid(): ?int
     {
         return $this->uuid;
     }

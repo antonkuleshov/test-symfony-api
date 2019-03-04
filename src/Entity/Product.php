@@ -58,6 +58,7 @@ class Product
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Customer", inversedBy="products")
      * @ORM\JoinColumn(nullable=false, referencedColumnName="uuid")
+     * @Serializer\MaxDepth(2)
      */
     private $customer;
 
@@ -66,7 +67,12 @@ class Product
         $this->status = "new";
     }
 
-    public function getId(): ?int
+    public function __toString()
+    {
+        return $this->issn;
+    }
+
+    public function getIssn(): ?int
     {
         return $this->issn;
     }

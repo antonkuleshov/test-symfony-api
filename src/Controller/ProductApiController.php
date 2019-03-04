@@ -6,6 +6,7 @@ use App\Entity\Product;
 use App\Repository\ProductRepository;
 use App\Service\ProductService;
 use App\Service\ResponseErrorDecoratorService;
+use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,9 +25,10 @@ class ProductApiController extends AbstractController
      */
     public function getProducts(ProductRepository $productRepository): JsonResponse
     {
-        $json = $this->get("serializer")->serialize($productRepository->findAll(), 'json');
+        $serializer = SerializerBuilder::create()->build();
+        $products = $serializer->serialize($productRepository->findAll(), 'json');
 
-        return new JsonResponse($json, Response::HTTP_OK, []);
+        return new JsonResponse(json_decode($products), Response::HTTP_OK, []);
     }
 
     /**
@@ -45,28 +47,26 @@ class ProductApiController extends AbstractController
             return new JsonResponse($data, $status);
         }
 
-        $json = $this->get("serializer")->serialize($product, 'json');
+        $serializer = SerializerBuilder::create()->build();
+        $productSerial = $serializer->serialize($product, 'json');
 
-        $productJson = stripslashes($json);
-
-        return new JsonResponse($productJson, Response::HTTP_OK, []);
+        return new JsonResponse(json_decode($productSerial), Response::HTTP_OK, []);
     }
 
     /**
      * @Route("/", name="create_product", methods={"POST"})
-     * @param Request $request
+     * @param String $data
      * @param ProductService $productService
      * @param ResponseErrorDecoratorService $errorDecorator
      * @return JsonResponse
      */
     public function createProduct(
-        Request $request,
+        String $data,
         ProductService $productService,
         ResponseErrorDecoratorService $errorDecorator): JsonResponse
     {
 
-        $body = $request->getContent();
-        $data = json_decode($body, true);
+        $data = json_decode($data, true);
 
         if (is_null($data) || !isset($data['name'])) {
 
@@ -102,19 +102,18 @@ class ProductApiController extends AbstractController
     /**
      * @Route("/{id}", name="update_product", methods={"PUT"})
      * @param Product $product
-     * @param Request $request
+     * @param String $data
      * @param ProductService $productService
      * @param ResponseErrorDecoratorService $errorDecorator
      * @return JsonResponse
      */
     public function updateProduct(
         Product $product,
-        Request $request,
+        String $data,
         ProductService $productService,
         ResponseErrorDecoratorService $errorDecorator): JsonResponse
     {
-        $body = $request->getContent();
-        $data = json_decode($body, true);
+        $data = json_decode($data, true);
 
         if (is_null($data) || !isset($data['name'])) {
 
@@ -162,7 +161,7 @@ class ProductApiController extends AbstractController
         $result = $productService->deleteProduct($product);
 
         if ($result instanceof Product) {
-            $status = JsonResponse::HTTP_LOCKED;
+            $status = JsonResponse::HTTP_OK;
             $data = [
                 'data' => [
                     'issn' => $result->getIssn(),

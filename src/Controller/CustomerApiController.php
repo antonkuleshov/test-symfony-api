@@ -6,6 +6,7 @@ use App\Entity\Customer;
 use App\Repository\CustomerRepository;
 use App\Service\CustomerService;
 use App\Service\ResponseErrorDecoratorService;
+use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,12 +25,10 @@ class CustomerApiController extends AbstractController
      */
     public function getCustomers(CustomerRepository $customerRepository): JsonResponse
     {
-        $customers = $this->get("serializer")->serialize(
-            $customerRepository->findAll(),
-            'json'
-        );
+        $serializer = SerializerBuilder::create()->build();
+        $customers = $serializer->serialize($customerRepository->findAll(), 'json');
 
-        return new JsonResponse($customers, Response::HTTP_OK, []);
+        return new JsonResponse(json_decode($customers), Response::HTTP_OK, []);
     }
 
     /**
@@ -48,28 +47,28 @@ class CustomerApiController extends AbstractController
             return new JsonResponse($data, $status);
         }
 
-        $json = $this->get("serializer")->serialize($customer, 'json');
+        $serializer = SerializerBuilder::create()->build();
+        $customersSerial = $serializer->serialize($customer, 'json');
 
-        return new JsonResponse($json, Response::HTTP_OK, []);
+        return new JsonResponse(json_decode($customersSerial), Response::HTTP_OK, []);
     }
 
     /**
      * @Route("/", name="create_customer", methods={"POST"})
-     * @param Request $request
+     * @param String $data
      * @param CustomerService $customerService
      * @param ResponseErrorDecoratorService $errorDecorator
      * @return JsonResponse
      */
     public function createCustomer(
-        Request $request,
+        String $data,
         CustomerService $customerService,
         ResponseErrorDecoratorService $errorDecorator): JsonResponse
     {
 
-        $body = $request->getContent();
-        $data = json_decode($body, true);
+        $data = json_decode($data, true);
 
-        if (is_null($data) || !isset($data['first_name']) || !isset($data['last_name'])) {
+        if (is_null($data) || !isset($data['firstName']) || !isset($data['lastName'])) {
 
             $status = JsonResponse::HTTP_BAD_REQUEST;
             $data = $errorDecorator->decorateError(
@@ -87,8 +86,8 @@ class CustomerApiController extends AbstractController
             $data = [
                 'data' => [
                     'uuid' => $result->getUuid(),
-                    'first_name' => $result->getFirstName(),
-                    'last_name' => $result->getLastName(),
+                    'firstName' => $result->getFirstName(),
+                    'lastName' => $result->getLastName(),
                     'created' => $result->getCreatedAt()
                 ]
             ];
@@ -103,21 +102,20 @@ class CustomerApiController extends AbstractController
     /**
      * @Route("/{id}", name="update_customer", methods={"PUT"})
      * @param Customer $customer
-     * @param Request $request
+     * @param String $data
      * @param CustomerService $customerService
      * @param ResponseErrorDecoratorService $errorDecorator
      * @return JsonResponse
      */
     public function updateCustomer(
         Customer $customer,
-        Request $request,
+        String $data,
         CustomerService $customerService,
         ResponseErrorDecoratorService $errorDecorator): JsonResponse
     {
-        $body = $request->getContent();
-        $data = json_decode($body, true);
+        $data = json_decode($data, true);
 
-        if (is_null($data) || !isset($data['first_name']) || !isset($data['last_name'])) {
+        if (is_null($data) || !isset($data['firstName']) || !isset($data['lastName'])) {
 
             $status = JsonResponse::HTTP_BAD_REQUEST;
             $data = $errorDecorator->decorateError(
@@ -135,8 +133,8 @@ class CustomerApiController extends AbstractController
             $data = [
                 'data' => [
                     'uuid' => $result->getUuid(),
-                    'first_name' => $result->getFirstName(),
-                    'last_name' => $result->getLastName(),
+                    'firstName' => $result->getFirstName(),
+                    'lastName' => $result->getLastName(),
                     'updated' => $result->getUpdatedAt()
                 ]
             ];
@@ -163,7 +161,7 @@ class CustomerApiController extends AbstractController
         $result = $customerService->deleteCustomer($customer);
 
         if ($result instanceof Customer) {
-            $status = JsonResponse::HTTP_LOCKED;
+            $status = JsonResponse::HTTP_OK;
             $data = [
                 'data' => [
                     'uuid' => $result->getUuid(),

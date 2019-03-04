@@ -20,28 +20,36 @@ class CustomerService
      *
      * @param $data array which contains information about Customer
      *    $data = [
-     *      'first_name' => (string) Customer first name. Required.
-     *      'last_name' => (string) Customer last name. Required.
-     *      'date_of_birth' => (date) Customer date of birth. Non-required.
+     *      'firstName' => (string) Customer first name. Required.
+     *      'lastName' => (string) Customer last name. Required.
+     *      'dateOfBirth' => (date) Customer date of birth. Non-required.
      *      'status' => (string) Customer status. Required.
      *    ]
      * @return Customer|string Customer or error message
      */
     public function createCustomer(array $data)
     {
-        if (empty($data['first_name']) || empty($data['last_name']) || empty($data['status'])) {
+        if (empty($data['firstName']) || empty($data['lastName']) || empty($data['status'])) {
             return "First Name, Last Name and status must be provided to create new Customer";
         }
 
         try {
 
             $customer = new Customer();
-            $customer->setFirstName($data['first_name']);
-            $customer->setLastName($data['last_name']);
+
+            $customer->setFirstName($data['firstName']);
+            $customer->setLastName($data['lastName']);
             $customer->setStatus($data['status']);
 
-            if (isset($data['date_of_birth'])) {
-                $customer->setDateOfBirth($data['date_of_birth']);
+            if (!empty($data['dateOfBirth'])) {
+                $dateBirth = explode("-",$data['dateOfBirth']);
+                $customer->setDateOfBirth((new \DateTime())->setDate(
+                    $dateBirth[0],
+                    $dateBirth[1],
+                    $dateBirth[2]
+                ));
+            } else {
+                $customer->setDateOfBirth(null);
             }
 
             $customer->setCreatedAt(new \DateTime());
@@ -62,9 +70,9 @@ class CustomerService
      * @param Customer $customer
      * @param $data array which contains information about Customer
      *    $data = [
-     *      'first_name' => (string) Customer first name. Required.
-     *      'last_name' => (string) Customer last name. Required.
-     *      'date_of_birth' => (date) Customer date of birth. Non-required.
+     *      'firstName' => (string) Customer first name. Required.
+     *      'lastName' => (string) Customer last name. Required.
+     *      'dateOfBirth' => (date) Customer date of birth. Non-required.
      *      'status' => (string) Customer status. Required.
      *    ]
      * @return Customer|string Customer or error message
@@ -73,20 +81,27 @@ class CustomerService
     {
         try {
 
-            if (isset($data['first_name'])) {
-                $customer->setFirstName($data['first_name']);
+            if (isset($data['firstName'])) {
+                $customer->setFirstName($data['firstName']);
             }
 
-            if (isset($data['last_name'])) {
-                $customer->setLastName($data['last_name']);
+            if (isset($data['lastName'])) {
+                $customer->setLastName($data['lastName']);
             }
 
             if (isset($data['status'])) {
                 $customer->setStatus($data['status']);
             }
 
-            if (isset($data['date_of_birth'])) {
-                $customer->setDateOfBirth($data['date_of_birth']);
+            if (!empty($data['dateOfBirth'])) {
+                $dateBirth = explode("-",$data['dateOfBirth']);
+                $customer->setDateOfBirth((new \DateTime())->setDate(
+                    $dateBirth[0],
+                    $dateBirth[1],
+                    $dateBirth[2]
+                ));
+            } else {
+                $customer->setDateOfBirth(null);
             }
 
             $this->em->persist($customer);

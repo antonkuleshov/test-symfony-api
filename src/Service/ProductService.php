@@ -5,20 +5,14 @@ namespace App\Service;
 use App\Entity\Customer;
 use App\Entity\Product;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 
 class ProductService
 {
     private $em;
 
-    private $serializer;
-
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
-        $this->serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
     }
 
     /**
@@ -28,13 +22,13 @@ class ProductService
      *    $data = [
      *      'name' => (string) Product name. Required.
      *      'status' => (string) Product status. Non-Required.
-     *      'customer_id' => (int) Customer id. Required.
+     *      'customer' => (int) Customer id. Required.
      *    ]
      * @return Product|string Product or error message
      */
     public function createProduct(array $data)
     {
-        if (empty($data['name']) || empty((int)$data['customer_id'])) {
+        if (empty($data['name']) || empty((int)$data['customer'])) {
             return "Name, status and customer id must be provided to create new product";
         }
 
@@ -70,11 +64,12 @@ class ProductService
     /**
      * Update product by given data
      *
+     * @param Product $product
      * @param $data array which contains information about product
      *    $data = [
      *      'name' => (string) Product name. Required.
      *      'status' => (string) Product status. Required.
-     *      'customer_id' => (int) Customer id. Required.
+     *      'customer' => (int) Customer id. Required.
      *    ]
      * @return Product|string Product or error message
      */
@@ -92,11 +87,11 @@ class ProductService
 
             $customer = $product->getCustomer();
 
-            if (isset($data['customer_id'])) {
-                if ($customer->getUuid() !== $data['customer_id']) {
+            if (isset($data['customer'])) {
+                if ($customer->getUuid() !== $data['customer']) {
                     $customer = $this->em
                         ->getRepository(Customer::class)
-                        ->find($data['customer_id']);
+                        ->find($data['customer']);
                     if (!$customer) {
                         return "Unable to find customer to update to";
                     }
