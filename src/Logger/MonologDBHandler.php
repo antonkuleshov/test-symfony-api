@@ -2,6 +2,7 @@
 
 namespace App\Logger;
 
+use App\Entity\Log;
 use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\AbstractProcessingHandler;
 
@@ -28,6 +29,14 @@ class MonologDBHandler extends AbstractProcessingHandler
      */
     protected function write(array $record)
     {
+        $logEntry = new Log();
+        $logEntry->setMessage($record['message']);
+        $logEntry->setLevel($record['level']);
+        $logEntry->setLevelName($record['level_name']);
+        $logEntry->setExtra($record['extra']);
+        $logEntry->setContext($record['context']);
 
+        $this->em->persist($logEntry);
+        $this->em->flush();
     }
 }

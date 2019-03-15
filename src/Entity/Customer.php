@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\PersistentCollection;
 use JMS\Serializer\Annotation as Serializer;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -12,12 +13,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Table(name="customers")
  * @ORM\Entity(repositoryClass="App\Repository\CustomerRepository")
  */
-class Customer implements \Serializable
+class Customer
 {
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Type("integer")
      * @Serializer\Groups({"customer"})
      */
     private $uuid;
@@ -25,6 +27,7 @@ class Customer implements \Serializable
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank()
+     * @Serializer\Type("string")
      * @Serializer\Groups({"customer"})
      */
     private $firstName;
@@ -32,6 +35,7 @@ class Customer implements \Serializable
     /**
      * @ORM\Column(type="string", length=100)
      * @Assert\NotBlank()
+     * @Serializer\Type("string")
      * @Serializer\Groups({"customer"})
      */
     private $lastName;
@@ -39,6 +43,7 @@ class Customer implements \Serializable
     /**
      * @ORM\Column(type="date", nullable=true)
      * @Assert\Date()
+     * @Serializer\Type("DateTime")
      * @Serializer\Groups({"customer"})
      */
     private $dateOfBirth;
@@ -46,6 +51,7 @@ class Customer implements \Serializable
     /**
      * @ORM\Column(type="string", length=50)
      * @Assert\Choice(choices={"active","non-active","deleted"}, message="Enter a valid status")
+     * @Serializer\Type("string")
      * @Serializer\Groups({"customer"})
      */
     private $status;
@@ -53,6 +59,7 @@ class Customer implements \Serializable
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
+     * @Serializer\Type("DateTime")
      * @Serializer\Groups({"customer"})
      */
     private $createdAt;
@@ -60,6 +67,7 @@ class Customer implements \Serializable
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
+     * @Serializer\Type("DateTime")
      * @Serializer\Groups({"customer"})
      */
     private $updatedAt;
@@ -67,6 +75,7 @@ class Customer implements \Serializable
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Assert\DateTime()
+     * @Serializer\Type("DateTime")
      * @Serializer\Groups({"customer"})
      */
     private $deletedAt;
@@ -74,39 +83,9 @@ class Customer implements \Serializable
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Product", mappedBy="customer", orphanRemoval=true)
      * @ORM\JoinColumn(referencedColumnName="issn")
-     * @Serializer\MaxDepth(3)
+     * @Serializer\Type("ArrayCollection")
      */
     private $products;
-
-    /** @see \Serializable::serialize() */
-    public function serialize()
-    {
-        return serialize(array(
-            $this->uuid,
-            $this->firstName,
-            $this->lastName,
-            $this->status,
-            $this->dateOfBirth,
-            $this->createdAt,
-            $this->updatedAt,
-            $this->deletedAt
-        ));
-    }
-
-    /** @see \Serializable::unserialize() */
-    public function unserialize($serialized)
-    {
-        list (
-            $this->uuid,
-            $this->firstName,
-            $this->lastName,
-            $this->status,
-            $this->dateOfBirth,
-            $this->createdAt,
-            $this->updatedAt,
-            $this->deletedAt
-            ) = unserialize($serialized, ['allowed_classes' => false]);
-    }
 
     public function __construct()
     {

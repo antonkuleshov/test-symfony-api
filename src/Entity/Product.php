@@ -16,6 +16,7 @@ class Product
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Type("integer")
      * @Serializer\Groups("product")
      */
     private $issn;
@@ -23,6 +24,7 @@ class Product
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank()
+     * @Serializer\Type("string")
      * @Serializer\Groups("product")
      */
     private $name;
@@ -30,6 +32,7 @@ class Product
     /**
      * @ORM\Column(type="string", length=50)
      * @Assert\Choice(choices={"new", "pending", "in review", "approved", "inactive", "deleted"}, message="Enter a valid status")
+     * @Serializer\Type("string")
      * @Serializer\Groups("product")
      */
     private $status;
@@ -37,6 +40,7 @@ class Product
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
+     * @Serializer\Type("DateTime")
      * @Serializer\Groups("product")
      */
     private $createdAt;
@@ -44,6 +48,7 @@ class Product
     /**
      * @ORM\Column(type="datetime")
      * @Assert\DateTime()
+     * @Serializer\Type("DateTime")
      * @Serializer\Groups("product")
      */
     private $updatedAt;
@@ -51,14 +56,15 @@ class Product
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Assert\DateTime()
+     * @Serializer\Type("DateTime")
      * @Serializer\Groups("product")
      */
     private $deletedAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Customer", inversedBy="products")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Customer", inversedBy="products", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false, referencedColumnName="uuid")
-     * @Serializer\MaxDepth(2)
+     * @Serializer\Type("App\Entity\Customer")
      */
     private $customer;
 
@@ -69,7 +75,7 @@ class Product
 
     public function __toString()
     {
-        return $this->issn;
+        return $this->name;
     }
 
     public function getIssn(): ?int

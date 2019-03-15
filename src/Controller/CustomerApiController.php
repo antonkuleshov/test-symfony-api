@@ -4,9 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Repository\CustomerRepository;
+use App\Service\AppSerializer;
 use App\Service\CustomerService;
 use App\Service\ResponseErrorDecoratorService;
-use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +18,13 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class CustomerApiController extends AbstractController
 {
+    private $serializer;
+
+    public function __construct(AppSerializer $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Route("/", name="get_customers", methods={"GET"})
      * @param CustomerRepository $customerRepository
@@ -25,8 +32,7 @@ class CustomerApiController extends AbstractController
      */
     public function getCustomers(CustomerRepository $customerRepository): JsonResponse
     {
-        $serializer = SerializerBuilder::create()->build();
-        $customers = $serializer->serialize($customerRepository->findAll(), 'json');
+        $customers = $this->serializer->serialize($customerRepository->findAll());
 
         return new JsonResponse(json_decode($customers), Response::HTTP_OK, []);
     }
@@ -47,8 +53,7 @@ class CustomerApiController extends AbstractController
             return new JsonResponse($data, $status);
         }
 
-        $serializer = SerializerBuilder::create()->build();
-        $customersSerial = $serializer->serialize($customer, 'json');
+        $customersSerial = $this->serializer->serialize($customer);
 
         return new JsonResponse(json_decode($customersSerial), Response::HTTP_OK, []);
     }

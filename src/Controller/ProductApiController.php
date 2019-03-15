@@ -4,9 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Repository\ProductRepository;
+use App\Service\AppSerializer;
 use App\Service\ProductService;
 use App\Service\ResponseErrorDecoratorService;
-use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +18,13 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ProductApiController extends AbstractController
 {
+    private $serializer;
+
+    public function __construct(AppSerializer $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
     /**
      * @Route("/", name="get_Products", methods={"GET"})
      * @param ProductRepository $productRepository
@@ -25,8 +32,7 @@ class ProductApiController extends AbstractController
      */
     public function getProducts(ProductRepository $productRepository): JsonResponse
     {
-        $serializer = SerializerBuilder::create()->build();
-        $products = $serializer->serialize($productRepository->findAll(), 'json');
+        $products = $this->serializer->serialize($productRepository->findAll());
 
         return new JsonResponse(json_decode($products), Response::HTTP_OK, []);
     }
@@ -47,8 +53,7 @@ class ProductApiController extends AbstractController
             return new JsonResponse($data, $status);
         }
 
-        $serializer = SerializerBuilder::create()->build();
-        $productSerial = $serializer->serialize($product, 'json');
+        $productSerial = $this->serializer->serialize($product);
 
         return new JsonResponse(json_decode($productSerial), Response::HTTP_OK, []);
     }

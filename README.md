@@ -1,4 +1,6 @@
+## Symfony Simple Api Example for Products and Customers and Crud Controllers access to this entities
 
+For serialize/deserialize using JMS Serialization Bundle, but you may use something other
 
 ## Installation:
 

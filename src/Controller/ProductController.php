@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Form\ProductType;
 use App\Repository\ProductRepository;
+use App\Service\AppSerializer;
 use App\Service\ProductService;
 use App\Service\ResponseErrorDecoratorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,10 +19,14 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProductController extends AbstractController
 {
     private $productsApi;
+    private $serializer;
 
-    public function __construct(ProductApiController $productsApi)
+    public function __construct(
+        ProductApiController $productsApi,
+        AppSerializer $serializer)
     {
         $this->productsApi = $productsApi;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -31,12 +36,12 @@ class ProductController extends AbstractController
      */
     public function index(ProductRepository $productRepository): Response
     {
-        $collection = $this->productsApi->getProducts($productRepository);
+        $response = $this->productsApi->getProducts($productRepository);
 
-        $collectionArray = json_decode($collection->getContent(), true);
+        $arrayCollection = $this->serializer->deserialize($response->getContent(), 'ArrayCollection');
 
         return $this->render('product/index.html.twig', [
-            'products' => $collectionArray,
+            'products' => $arrayCollection,
         ]);
     }
 
@@ -81,10 +86,10 @@ class ProductController extends AbstractController
     {
         $response = $this->productsApi->getProduct($product, $errorDecorator);
 
-        $productArray = json_decode($response->getContent(), true);
+        $productObj = $this->serializer->deserialize($response->getContent(), get_class($product));
 
         return $this->render('product/show.html.twig', [
-            'product' => $productArray,
+            'product' => $productObj,
         ]);
     }
 
@@ -102,6 +107,11 @@ class ProductController extends AbstractController
         ProductService $productService,
         ResponseErrorDecoratorService $errorDecorator): Response
     {
+
+        $response = $this->productsApi->getProduct($product, $errorDecorator);
+
+        $productObj = $this->serializer->deserialize($response->getContent(), get_class($product));
+
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
 

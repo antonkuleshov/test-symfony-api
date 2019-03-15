@@ -5,15 +5,13 @@ namespace App\Controller;
 use App\Entity\Customer;
 use App\Form\CustomerType;
 use App\Repository\CustomerRepository;
+use App\Service\AppSerializer;
 use App\Service\CustomerService;
 use App\Service\ResponseErrorDecoratorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 
 /**
  * @Route("/customers")
@@ -21,14 +19,14 @@ use Symfony\Component\Serializer\Serializer;
 class CustomerController extends AbstractController
 {
     private $customersApi;
-
     private $serializer;
 
-    public function __construct(CustomerApiController $customersApi)
+    public function __construct(
+        CustomerApiController $customersApi,
+        AppSerializer $serializer)
     {
         $this->customersApi = $customersApi;
-
-        $this->serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
+        $this->serializer = $serializer;
     }
 
     /**
@@ -38,12 +36,12 @@ class CustomerController extends AbstractController
      */
     public function index(CustomerRepository $customerRepository): Response
     {
-        $collection = $this->customersApi->getCustomers($customerRepository);
+        $response = $this->customersApi->getCustomers($customerRepository);
 
-        $collectionArray = json_decode($collection->getContent(), true);
+        $arrayCollection = $this->serializer->deserialize($response->getContent(), 'ArrayCollection');
 
         return $this->render('customer/index.html.twig', [
-            'customers' => $collectionArray,
+            'customers' => $arrayCollection,
         ]);
     }
 
@@ -88,10 +86,10 @@ class CustomerController extends AbstractController
     {
         $response = $this->customersApi->getCustomer($customer, $errorDecorator);
 
-        $customerArray = json_decode($response->getContent(), true);
+        $customerObj = $this->serializer->deserialize($response->getContent(), get_class($customer));
 
         return $this->render('customer/show.html.twig', [
-            'customer' => $customerArray,
+            'customer' => $customerObj,
         ]);
     }
 
@@ -109,7 +107,12 @@ class CustomerController extends AbstractController
         CustomerService $customerService,
         ResponseErrorDecoratorService $errorDecorator): Response
     {
-        $form = $this->createForm(CustomerType::class, $customer);
+
+        $response = $this->customersApi->getCustomer($customer, $errorDecorator);
+
+        $customerObj = $this->serializer->deserialize($response->getContent(), get_class($customer));
+
+        $form = $this->createForm(CustomerType::class, $customerObj);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

@@ -13,15 +13,15 @@
             </tr>
             <tr>
                 <th>FirstName</th>
-                <td>{{ customer.first_name }}</td>
+                <td>{{ customer.firstName }}</td>
             </tr>
             <tr>
                 <th>LastName</th>
-                <td>{{ customer.last_name }}</td>
+                <td>{{ customer.lastName }}</td>
             </tr>
             <tr>
                 <th>DateOfBirth</th>
-                <td>{{ customer.date_of_birth ? customer.date_of_birth|date('Y-m-d') : '' }}</td>
+                <td>{{ customer.dateOfBirth ? customer.dateOfBirth|date('Y-m-d') : '' }}</td>
             </tr>
             <tr>
                 <th>Status</th>
@@ -29,11 +29,11 @@
             </tr>
             <tr>
                 <th>CreatedAt</th>
-                <td>{{ customer.created_at ? customer.created_at|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ customer.createdAt ? customer.createdAt|date('Y-m-d H:i:s') : '' }}</td>
             </tr>
             <tr>
                 <th>UpdatedAt</th>
-                <td>{{ customer.updated_at ? customer.updated_at|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ customer.updatedAt ? customer.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
             </tr>
         </tbody>
     </table>

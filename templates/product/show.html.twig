@@ -21,11 +21,16 @@
             </tr>
             <tr>
                 <th>CreatedAt</th>
-                <td>{{ product.created_at ? product.created_at|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ product.createdAt ? product.createdAt|date('Y-m-d H:i:s') : '' }}</td>
             </tr>
             <tr>
                 <th>UpdatedAt</th>
-                <td>{{ product.updated_at ? product.updated_at|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ product.updatedAt ? product.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+
+            <tr>
+                <th>Customer</th>
+                <td>{{ product.customer.firstName }} {{ product.customer.lastName }}</td>
             </tr>
 
         </tbody>
